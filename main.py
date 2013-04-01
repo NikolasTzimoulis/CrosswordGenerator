@@ -1,4 +1,6 @@
-import random
+# This Python file uses the following encoding: utf-8
+
+import random, re
 
 def importDictionary():
     filename = 'dictionary-en.tsv'
@@ -6,15 +8,16 @@ def importDictionary():
     lexicon = []
     for line in dictionary:
         lang, term, pos, definition = line.split('\t')
+        if len(term) < 2 or not re.match("^[A-Za-z]*$", term):
+            continue #skip one-letter words
         lexicon.append((term, definition))
     return lexicon
 
 def generateCrossword(dimensions, lexicon):
     maxHeight, maxWidth = dimensions
-    grid = [[""]*maxWidth]*maxHeight
-    #grid = [[str(row) + str(column) for column in range(maxWidth)] for row in range(maxHeight)]
+    grid = [[""]*maxWidth for _ in range(maxHeight)]
     print grid
-    for _ in range(1):
+    for _ in range(5):
         #set the position and direction for the new word
         startRow, startCol = (random.randint(0, maxHeight - 1), random.randint(0, maxWidth - 1))
         direction = random.random() > 0.5 # True = horizontal
@@ -30,9 +33,11 @@ def generateCrossword(dimensions, lexicon):
             if len(letter) > 0:
                 conditions.append((letterPos, letter))
                 letterPos += 1
-        print conditions
+        print "Conditions: " + str(conditions) + str(startRow) + str(startCol)
         #find all the words that satisfy the above conditions
         maxWordLength = maxWidth - startCol if direction else maxHeight - startRow
+        if maxWordLength < 2:
+            continue #again, can't have one-letter words
         firstEntry = random.randint(0, len(lexicon) - 1)
         for entry in lexicon[firstEntry:]:
             term = entry[0]
@@ -54,7 +59,10 @@ def generateCrossword(dimensions, lexicon):
                     for row in range(startRow, len(term) + startRow):
                         grid[row][startCol] = term[wordIndex]
                         wordIndex += 1
-        print grid
+                break #word found
+        print "Crossword: "
+        crossword = "\n".join(str(row) for row in grid) #newline for each row
+        print crossword
 
 
 lexicon = importDictionary()
