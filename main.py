@@ -3,6 +3,7 @@
 import random, re
 
 dummy = '@'
+maxRounds = 100
 
 def importDictionary():
     filename = 'dictionary-en.tsv'
@@ -17,12 +18,20 @@ def importDictionary():
 def generateCrossword(dimensions, lexicon):
     maxHeight, maxWidth = dimensions
     grid = [[""]*maxWidth for _ in range(maxHeight)]
-    terms = []
-    for _ in range(10):
+    terms = {}
+    for i in range(maxRounds):
+        if i%(maxRounds/10)==0: print '.',
         #set the position and direction for the new word
-        startRow = random.randint(0, maxHeight - 1)
-        startCol = random.randint(0, maxWidth  - 1)
         across = random.random() > 0.5 # select direction for the word: either across or down
+        # find position closest to left-uppermost corner that does not have a word starting from it 
+        startRow = startCol = 0
+        while (startRow, startCol, across) in terms.keys():
+            if startRow == startCol:
+                startRow += 1
+            elif startRow > startCol:
+                startCol, startRow = startRow, startCol
+            else:
+                startRow = startCol
         
         #find all crossing points with pre-existing words
         letters = []
@@ -52,7 +61,7 @@ def generateCrossword(dimensions, lexicon):
                 term = term + dummy
             satisfiedConditions = sum(i >= len(term) or term[i] == letter for i, letter in conditions)
             if satisfiedConditions == len(conditions):
-                terms.append(term.replace(dummy, ''))
+                terms[(startRow, startCol, across)] = term.replace(dummy, '')
                 for offset, letter in enumerate(term):
                     if across:
                         grid[startRow][startCol + offset] = letter
@@ -63,8 +72,11 @@ def generateCrossword(dimensions, lexicon):
                 break #word found 
     return grid, terms
 
+def printCrossWord(grid):
+    print "CROSSWORD:\n\n" + "\n".join(' '.join([x if len(x)>0 else '_' for x in row]) for row in grid)
+
 
 lexicon = importDictionary()
 grid, terms = generateCrossword((5,5), lexicon)
-print "CROSSWORD:\n\n" + "\n".join(' '.join([x if len(x)>0 else '_' for x in row]) for row in grid)
-print "\nTERMS: " + ', '.join(terms)
+printCrossWord(grid)
+print "\nTERMS: " + ', '.join(terms.values())
