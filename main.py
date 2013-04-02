@@ -2,15 +2,16 @@
 
 import random, re
 
+dummy = '@'
+
 def importDictionary():
     filename = 'dictionary-en.tsv'
     dictionary = open(filename, 'r')
     lexicon = []
     for line in dictionary:
         lang, term, pos, definition = line.split('\t')
-        if len(term) < 2 or not re.match("^[A-Za-z]*$", term):
-            continue #skip one-letter words
-        lexicon.append((term.upper(), definition))
+        if len(term) >= 2 and term.isalpha():
+            lexicon.append((term.upper(), definition))        
     return lexicon
 
 def generateCrossword(dimensions, lexicon):
@@ -39,13 +40,14 @@ def generateCrossword(dimensions, lexicon):
         firstEntry = random.randint(0, len(lexicon) - 1)
         for term, definition in lexicon[firstEntry:]:
             if len(term) > maxWordLength or term in terms: continue
+            term = term + dummy # extend the term with a dummy character
             satisfiedConditions = sum(i >= len(term) or term[i] == letter for i, letter in conditions)
             if satisfiedConditions == len(conditions):
-                terms.append(term)
+                terms.append(term[:-1])
                 for offset, letter in enumerate(term):
-                    if across:
+                    if across and startCol + offset < maxWidth:
                         grid[startRow][startCol + offset] = letter
-                    else:
+                    elif startRow + offset < maxHeight:
                         grid[startRow + offset][startCol] = letter
                 #print term
                 #print "Crossword:\n" + "\n".join(str(row) for row in grid) #newline for each row
