@@ -57,14 +57,19 @@ def generateCrossword(dimensions, lexicon):
         maxWordLength = maxWidth - startCol if across else maxHeight - startRow
         if maxWordLength < minWordLength: continue #again, can't have one-letter words
         
-        #find a word that satisfies the above conditions, starting from a random place in the lexicon
+        #find a word that satisfies the above conditions
         wordFound = False
+        # iterate through all valid word lengths
         for wordLength in reversed(range(minWordLength, maxWordLength+1)):
             if wordFound: break
             subLexicon = lexicon[wordLength]
-            startEntry = random.randint(0, len(subLexicon) - 1)
-            # the direction of search is also random
-            lexIter = subLexicon[startEntry:] if random.random() > 0.5 else reversed(subLexicon[:startEntry])
+            if len(conditions) < 2:
+                # start from a random place in the sub-lexicon
+                startEntry = random.randint(0, len(subLexicon) - 1)
+                # the direction of search is also random
+                lexIter = subLexicon[startEntry:] if random.random() > 0.5 else reversed(subLexicon[:startEntry])
+            else:
+                lexIter = subLexicon if random.random() > 0.5 else reversed(subLexicon)
             for term, definition in lexIter:
                 if startdummy: term = dummy + term 
                 if len(term) > maxWordLength or term in terms.values(): 
