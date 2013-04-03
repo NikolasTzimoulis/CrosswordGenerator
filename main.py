@@ -3,7 +3,7 @@
 import random, copy, time
 
 dummy = '@'
-maxRounds = 100
+maxRounds = 1000
 minWordLength = 2
 
 def importDictionary():
@@ -31,7 +31,7 @@ def generateCrossword(dimensions, lexicon):
         across = random.random() > 0.5 # select direction for the word: either across or down
         # find position closest to left-uppermost corner that does not have a word starting from it 
         startRow = startCol = 0
-        while (startRow, startCol, across) in terms:
+        while not isValidStart(grid, terms, startRow, startCol, across):
             if startRow == startCol:
                 startRow += 1
             elif startRow > startCol:
@@ -98,6 +98,16 @@ def generateCrossword(dimensions, lexicon):
         if len(t) > len(terms):
             terms, grid = t, g
     return grid, terms
+
+def isValidStart(grid, terms, startRow, startCol, across):
+    it = reversed(range( (startCol if across else startRow) + 1 )) 
+    for i in it:
+        r, c = (startRow, i) if across else (i, startCol)
+        if (r, c, across) in terms:
+            return False
+        elif grid[r][c] == dummy:
+            break
+    return True
 
 def printCrossWord(grid):
     print "\nCrossword:\n\n" + "\n".join(' '.join([x if len(x)>0 else '_' for x in row]) for row in grid)
