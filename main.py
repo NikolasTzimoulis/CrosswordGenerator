@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 
-import random, copy, time
+import random, copy, time, itertools
 
 dummy = '@'
 maxRounds = 1000
@@ -18,8 +18,10 @@ def importDictionary():
             lexicon[wordLength].append((term.upper(), definition))
     return lexicon
 
-def generateCrossword(dimensions, lexicon):
-    maxHeight, maxWidth = dimensions
+def generateCrossword(size, lexicon):
+    maxHeight = maxWidth = size
+    startOrder = itertools.combinations_with_replacement(range(size),2)
+    startOrder = sorted(startOrder, cmp=lambda x,y: x[0]+x[1]-y[0]-y[1])
     terms = {}
     grid = [[""]*maxWidth for _ in range(maxHeight)]
     frontStates = [ (terms, grid) ]
@@ -30,14 +32,9 @@ def generateCrossword(dimensions, lexicon):
         #set the position and direction for the new word
         across = random.random() > 0.5 # select direction for the word: either across or down
         # find position closest to left-uppermost corner that does not have a word starting from it 
-        startRow = startCol = 0
-        while not isValidStart(grid, terms, startRow, startCol, across):
-            if startRow == startCol:
-                startRow += 1
-            elif startRow > startCol:
-                startCol, startRow = startRow, startCol
-            else:
-                startRow = startCol
+        for startRow, startCol in startOrder:
+            if isValidStart(grid, terms, startRow, startCol, across):
+                break
         
         #find all crossing points with pre-existing words
         letters = []
@@ -114,7 +111,7 @@ def printCrossWord(grid):
 
 startTime = time.clock()
 lexicon = importDictionary()
-grid, terms = generateCrossword((5,5), lexicon)
+grid, terms = generateCrossword(5, lexicon)
 printCrossWord(grid)
-print "\nTermsS: " + ', '.join(terms.values())
+print "\nTerms: " + ', '.join(terms.values())
 print 'Time: ', round(time.clock() - startTime, 1), 's'
