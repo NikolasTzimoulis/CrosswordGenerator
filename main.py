@@ -1,9 +1,9 @@
 # This Python file uses the following encoding: utf-8
 
-import random, copy
+import random, copy, time
 
 dummy = '@'
-maxRounds = 10000
+maxRounds = 100
 minWordLength = 2
 
 def importDictionary():
@@ -89,13 +89,17 @@ def generateCrossword(dimensions, lexicon):
                     break #word found
         if not wordFound: # we need to backtrack!
             deadEndStates.append( frontStates.pop() )
+    for t, g in frontStates + deadEndStates: #find best state!
+        if len(t) > len(terms):
+            terms, grid = t, g
     return grid, terms
 
 def printCrossWord(grid):
-    print "CROSSWORD:\n\n" + "\n".join(' '.join([x if len(x)>0 else '_' for x in row]) for row in grid)
+    print "\nCrossword:\n\n" + "\n".join(' '.join([x if len(x)>0 else '_' for x in row]) for row in grid)
 
-
+startTime = time.clock()
 lexicon = importDictionary()
 grid, terms = generateCrossword((5,5), lexicon)
 printCrossWord(grid)
-print "\nTERMS: " + ', '.join(terms.values())
+print "\nTermsS: " + ', '.join(terms.values())
+print 'Time: ', round(time.clock() - startTime, 1), 's'
