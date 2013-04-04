@@ -23,7 +23,7 @@ def generateCrossword(size, lexicon):
     maxHeight = maxWidth = size
     startOrder = set(itertools.combinations_with_replacement(range(size),2))
     startOrder = startOrder.union([(x[1], x[0]) for x in startOrder])
-    startOrder = sorted(startOrder, cmp=lambda x,y: 100*(x[0]+x[1]-y[0]-y[1])+min(x)-min(y))
+    startOrder = sorted(startOrder, cmp=lambda x,y: x[0]+x[1]-y[0]-y[1]+10*(min(x)-min(y)))
     terms = {}
     grid = [[""]*maxWidth for _ in range(maxHeight)]
     frontStates = [ (terms, grid) ]
