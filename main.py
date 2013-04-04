@@ -1,12 +1,16 @@
 # This Python file uses the following encoding: utf-8
 
-import random, copy, time, itertools
+import random, copy, itertools
+import decorators
+from decorators import profile
 
 dummy = '@'
-maxRounds = 1000
+maxRounds = 100
 minWordLength = 2
 maxCandidates = 3
+profiled = decorators.profiled
 
+@profile
 def importDictionary():
     filename = 'dictionary-en.tsv'
     dictionaryRaw = open(filename, 'r')
@@ -19,6 +23,7 @@ def importDictionary():
             lexicon[wordLength].append((term.upper(), definition))
     return lexicon
 
+@profile
 def generateCrossword(size, lexicon):
     maxHeight = maxWidth = size
     startOrder = set(itertools.combinations_with_replacement(range(size),2))
@@ -102,6 +107,7 @@ def generateCrossword(size, lexicon):
             terms, grid = t, g
     return grid, terms
 
+@profile
 def isValidStart(grid, terms, startRow, startCol, across):
     it = reversed(range( (startCol if across else startRow) + 1 )) 
     for i in it:
@@ -112,6 +118,7 @@ def isValidStart(grid, terms, startRow, startCol, across):
             break
     return True
 
+@profile
 def getConditions(grid, startRow, startCol, across):
     letters = []
     if across: #move horizontally
@@ -123,9 +130,9 @@ def getConditions(grid, startRow, startCol, across):
 def printCrossWord(grid):
     print "\nCrossword:\n\n" + "\n".join(' '.join([x if len(x)>0 else '_' for x in row]) for row in grid)
 
-startTime = time.clock()
 lexicon = importDictionary()
 grid, terms = generateCrossword(5, lexicon)
 printCrossWord(grid)
 print "\nTerms: " + ', '.join(terms.values())
-print 'Time: ', round(time.clock() - startTime, 1), 's'
+
+decorators.printProfiled()
