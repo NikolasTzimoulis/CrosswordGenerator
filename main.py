@@ -5,6 +5,7 @@ import random, copy, time, itertools
 dummy = '@'
 maxRounds = 1000
 minWordLength = 2
+maxCandidates = 3
 
 def importDictionary():
     filename = 'dictionary-en.tsv'
@@ -20,30 +21,35 @@ def importDictionary():
 
 def generateCrossword(size, lexicon):
     maxHeight = maxWidth = size
-    startOrder = itertools.combinations_with_replacement(range(size),2)
-    startOrder = sorted(startOrder, cmp=lambda x,y: x[0]+x[1]-y[0]-y[1])
+    startOrder = set(itertools.combinations_with_replacement(range(size),2))
+    startOrder = startOrder.union([(x[1], x[0]) for x in startOrder])
+    startOrder = sorted(startOrder, cmp=lambda x,y: 100*(x[0]+x[1]-y[0]-y[1])+min(x)-min(y))
     terms = {}
     grid = [[""]*maxWidth for _ in range(maxHeight)]
     frontStates = [ (terms, grid) ]
     deadEndStates = []
     for i in range(maxRounds):
         terms, grid = copy.deepcopy(frontStates[-1])
-        if i%(maxRounds/10)==0: print '.',
-        #set the position and direction for the new word
-        across = random.random() > 0.5 # select direction for the word: either across or down
-        # find position closest to left-uppermost corner that does not have a word starting from it 
-        for startRow, startCol in startOrder:
-            if isValidStart(grid, terms, startRow, startCol, across):
-                break
         
-        #find all crossing points with pre-existing words
-        letters = []
-        if across: #move horizontally
-            letters = grid[startRow][startCol:]
-        else:
-            letters = [row[startCol] for row in grid[startRow:]]
-        conditions = [(index, letter) for index, letter in enumerate(letters) if len(letter) > 0]
-        #print "Conditions: " + str(conditions) + ", starting row: " + str(startRow) + ", starting column: " + str(startCol)
+        if i%(maxRounds/10)==0: print '.', # progress bar; one dot every 10% of the rounds
+             
+        # find free positions close to left-uppermost corner
+        startCandidates = []
+        for startRow, startCol in startOrder:
+            if len(startCandidates) >= maxCandidates: break
+            for across in [True, False]:
+                if isValidStart(grid, terms, startRow, startCol, across):
+                    startCandidates.append((startRow, startCol, across))
+        
+        #find all crossing points with pre-existing words for each candidate
+        condList = map(lambda x: getConditions(grid, x[0], x[1], x[2]), startCandidates)
+        # best candidate is the one with the most crossings
+        condLengths = map(len, condList)
+        bestPosIndex = condLengths.index(max(condLengths))
+        startRow, startCol, across = startCandidates[bestPosIndex]
+        conditions = condList[bestPosIndex]
+        
+        
         # decide whether a dummy character is needed in the beginning of the word
         startdummy = True
         if across and startCol == 0 and not grid[startRow][startCol] == dummy:
@@ -105,6 +111,14 @@ def isValidStart(grid, terms, startRow, startCol, across):
         elif grid[r][c] == dummy:
             break
     return True
+
+def getConditions(grid, startRow, startCol, across):
+    letters = []
+    if across: #move horizontally
+        letters = grid[startRow][startCol:]
+    else:
+        letters = [row[startCol] for row in grid[startRow:]]
+    return [(index, letter) for index, letter in enumerate(letters) if len(letter) > 0]
 
 def printCrossWord(grid):
     print "\nCrossword:\n\n" + "\n".join(' '.join([x if len(x)>0 else '_' for x in row]) for row in grid)
