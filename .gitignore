@@ -2,3 +2,4 @@
 *.pydevproject
 *.tsv
 .settings
+*.pyc
