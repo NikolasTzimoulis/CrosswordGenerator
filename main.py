@@ -5,7 +5,7 @@ import decorators
 from decorators import profile
 
 dummy = '@'
-maxRounds = 10**3
+maxRounds = 10**4
 minWordLength_absolute = 2
 maxCandidates = 5
 profiled = decorators.profiled
@@ -189,8 +189,11 @@ def getFittingWords(subConditions, startdummy, subLexicon):
     # calculate the lists of words that satisfy each condition
     # their intersection are the words that satisfy all conditions 
     if len(subConditions) > 0: 
-        fittingWordSets = map(lambda x: subLexicon[x], subConditions)
-        fittingWordIds = reduce(lambda x,y: x.intersection(y), fittingWordSets)
+        try:
+            fittingWordSets = map(lambda x: subLexicon[x], subConditions)
+            fittingWordIds = reduce(lambda x,y: x.intersection(y), fittingWordSets)
+        except:
+            fittingWordIds = []
     else: # if there are no conditions, take all words!
         fittingWordSets = subLexicon.values()
         fittingWordIds = reduce(lambda x,y: x.union(y), fittingWordSets)
@@ -225,7 +228,7 @@ def printCrossWord(grid):
     print "\nCrossword:\n\n" + "\n".join(' '.join([x if len(x)>0 else '_' for x in row]) for row in grid)
 
 lexicon, wordLookup = importDictionary()
-grid, terms = generateCrossword(7, lexicon, wordLookup)
+grid, terms = generateCrossword(5, lexicon, wordLookup)
 printCrossWord(grid)
 print "\nTerms: " + ', '.join(terms.values()) + "\n"
 decorators.printProfiled()
