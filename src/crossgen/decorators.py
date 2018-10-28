@@ -1,3 +1,5 @@
+from __future__ import print_function, absolute_import
+
 import functools, time
 
 def decorator(d):
@@ -22,7 +24,7 @@ def timed(f):
     def _f(*args):
         startTime = time.clock()
         result = f(*args)
-        print 'Time: ', round(time.clock() - startTime, 1), 's'
+        print('Time: ', round(time.clock() - startTime, 1), 's')
         return result
     return _f
 
@@ -51,7 +53,7 @@ def profile(f):
 profiled = {}
 
 def printProfiled():
-    print "\n".join([func.__name__ + ': ' + str(profiled[func][0]) + ' calls in a total of ' + str(profiled[func][1]) + 's' for func in profiled])
+    print("\n".join([func.__name__ + ': ' + str(profiled[func][0]) + ' calls in a total of ' + str(profiled[func][1]) + 's' for func in profiled]))
 
 def disabled(f):
     # Example: Use trace = disabled to turn off trace decorators
