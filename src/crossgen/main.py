@@ -8,7 +8,7 @@ import random
 import sys
 
 from src.crossgen import constants, decorators, dictionary
-from src.crossgen.constants import minWordLength_absolute, dummy, maxCandidates, maxRounds
+from src.crossgen.constants import minWordLength_absolute, dummy, maxCandidates
 
 
 @decorators.profile
@@ -25,8 +25,8 @@ def generateCrossword(size, lexicon, wordLookup):
     deadEndStates = []
     for i in range(constants.maxRounds):
         terms, grid = copy.deepcopy(frontStates[-1])
-        
-        print('{0}/{1}'.format(str(i), str(maxRounds)), end='\r')  # progress bar
+        percent = i * 100 / constants.maxRounds
+        print(f'{i}/{constants.maxRounds} ({percent}%)', end='\r')  # progress bar
         
         # find a good starting position for the next word
         startRow, startCol, across, conditions = getStartPos(startOrder, grid, terms)
@@ -222,10 +222,12 @@ def printCrossWord(grid):
     print("\nCrossword:\n\n" + "\n".join(' '.join([x if len(x)>0 else '_' for x in row]) for row in grid))
 
 
-def run(dictionary_file):
-    lexicon, wordLookup = dictionary.import_dict_new(dictionary_file)
-    # lexicon, wordLookup = dictionary.importDictionary(dictionary_file)
-    grid, terms = generateCrossword(5, lexicon, wordLookup)
+def run(dictionary_file, new=True):
+    if new:
+        d = dictionary.import_d(dictionary_file)
+    else:
+        d = dictionary.import_d2(dictionary_file)
+    grid, terms = generateCrossword(5, **d)
     printCrossWord(grid)
     print("\nTerms: " + ', '.join(terms.values()) + "\n")
     decorators.printProfiled()
@@ -237,12 +239,15 @@ def profile(expr):
 
 
 if __name__ == "__main__":
-    dictionary_file = os.path.join(os.path.expanduser('~'), '.crossgen', 'dictionary-en-10000.tsv')
+    dictionary_file = os.path.join(os.path.expanduser('~'), '.crossgen', 'dictionary-en-5000.tsv')
     mode = None if len(sys.argv) < 2 else sys.argv[1]
     if mode == 'profile':
         profile('run(dictionary_file)')
     elif mode == 'run':
         run(dictionary_file)
+    elif mode == 'new':
+        run(dictionary_file, new=True)
+    elif mode == 'old':
+        run(dictionary_file, new=False)
     else:
         run(dictionary_file)
-
