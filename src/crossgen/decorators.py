@@ -42,9 +42,9 @@ totaltime = {}
     
 @decorator
 def profile(f):
-    def _f(*args):
+    def _f(*args, **kwargs):
         startTime = time.clock()
-        result = f(*args)
+        result = f(*args, **kwargs)
         profiled[_f][0] += 1
         profiled[_f][1] += time.clock() - startTime
         return result

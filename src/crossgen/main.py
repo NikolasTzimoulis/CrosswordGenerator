@@ -12,7 +12,7 @@ from src.crossgen.constants import minWordLength_absolute, dummy, maxCandidates
 
 
 @decorators.profile
-def generateCrossword(size, lexicon, wordLookup):
+def generateCrossword(size, lexicon, word_lookup):
     print('Generating crossword')
     maxHeight = maxWidth = size
     startOrder = set(itertools.combinations_with_replacement(range(size),2))
@@ -54,7 +54,7 @@ def generateCrossword(size, lexicon, wordLookup):
             # only conditions up to the wordLength-th word need apply
             subConditions = [cond for cond in conditions if cond[0] < wordLength]
             # find all the words that satisfy all conditions
-            fittingWords = getFittingWords(subConditions, startdummy, subLexicon, wordLookup)
+            fittingWords = getFittingWords(subConditions, startdummy, subLexicon, word_lookup)
             random.shuffle(fittingWords)
             while len(fittingWords) > 0 and not wordFound:
                 term = fittingWords.pop()  # choose one of the fitting words randomly
@@ -187,7 +187,7 @@ def getFittingWords(subConditions, startdummy, subLexicon, wordLookup):
     else: # if there are no conditions, take all words!
         fittingWordSets = list(subLexicon.values())
         fittingWordIds = set.union(set(fittingWordSets[0]), *itertools.islice(fittingWordSets, 1, None))
-    fittingWords = [wordLookup[wid][0] for wid in fittingWordIds]
+    fittingWords = [wordLookup[wid][1] for wid in fittingWordIds]
     return fittingWords
 
 
@@ -227,7 +227,7 @@ def run(dictionary_file, new=True):
         d = dictionary.import_d(dictionary_file)
     else:
         d = dictionary.import_d2(dictionary_file)
-    grid, terms = generateCrossword(5, **d)
+    grid, terms = generateCrossword(size=5, **d)
     printCrossWord(grid)
     print("\nTerms: " + ', '.join(terms.values()) + "\n")
     decorators.printProfiled()
